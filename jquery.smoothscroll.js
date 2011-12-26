@@ -15,7 +15,6 @@
         return this.each(function () {
             var $this = $(this),
                 h = this.hash;
-            console.log(h);
             if (/^#/.test(h) && $(h).length === 0) {
                 return;
             }
