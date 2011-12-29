@@ -1,5 +1,5 @@
 /*!
- * jQuery Smooth Scroll plugin v0.9
+ * jQuery Smooth Scroll plugin v0.9.1
  * https://github.com/terkel/jquery-smoothscroll
  *
  * Copyright (c) 2011 Takeru Suzuki, http://terkel.jp/
@@ -14,7 +14,8 @@
         var opts = $.extend({}, $.fn.smoothScroll.defaults, options);
         return this.each(function () {
             var $this = $(this),
-                h = this.hash;
+                h = this.hash,
+                elem = ($.browser.webkit || !$.support.boxModel)? 'body': 'html';
             if (/^#/.test(h) && $(h).length === 0) {
                 return;
             }
@@ -26,9 +27,12 @@
                     targetOffset = (documentHeight - windowHeight);
                 }
                 event.preventDefault();
-                $('html, body').stop().animate({ scrollTop: targetOffset }, opts.duration, opts.easing, function () {
+                $(elem).stop().animate({ scrollTop: targetOffset }, opts.duration, opts.easing, function () {
                     if (opts.hash) {
                         location.hash = h;
+                    }
+                    if ($.isFunction(opts.callback)) {
+                        opts.callback.call($this.get(0));
                     }
                 });
             });
@@ -39,7 +43,8 @@
         duration: 400,
         easing: 'swing',
         hash: true,
-        paddingTop: 0
+        paddingTop: 0,
+        callback: null
     };
 
 })(window, jQuery);
