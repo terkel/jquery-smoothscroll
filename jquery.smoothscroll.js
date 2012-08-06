@@ -1,50 +1,80 @@
 /*!
- * jQuery Smooth Scroll plugin v0.9.1
+ * jQuery Smooth Scroll plugin v0.9.2
  * https://github.com/terkel/jquery-smoothscroll
  *
- * Copyright (c) 2011 Takeru Suzuki, http://terkel.jp/
- * Licensed under the MIT license: http://www.opensource.org/licenses/MIT
+ * Copyright (c) 2012 Takeru Suzuki - http://terkel.jp/
+ * Licensed under the MIT license - http://www.opensource.org/licenses/MIT
  */
-(function (window, $) {
+(function (window, document, $) {
 
-    var document = window.document,
-        location = window.location;
+    $.smoothScroll = {
+        init: initSmoothScroll,
+        defaults: {
+            selector: '[href^="#"]',
+            duration: 400,
+            easing: 'swing',
+            hash: true,
+            paddingTop: 0,
+            callback: null
+        }
+    };
 
-    $.fn.smoothScroll = function (options) {
-        var opts = $.extend({}, $.fn.smoothScroll.defaults, options);
-        return this.each(function () {
+    function initSmoothScroll (options) {
+
+        var opts = $.extend({}, $.smoothScroll.defaults, options),
+            $document = $(document),
+            node;
+
+        $document.on('click', opts.selector, smoothScroll);
+
+        $document.ready(function () {
+            node = scrollableNode('html', 'body');
+        });
+
+        function smoothScroll (event) {
             var $this = $(this),
                 h = this.hash,
-                elem = ($.browser.webkit || !$.support.boxModel)? 'body': 'html';
-            if (/^#/.test(h) && $(h).length === 0) {
-                return;
+                targetOffset = ($(h).offset())? $(h).offset().top - opts.paddingTop: 0,
+                docHeight = $document.height(),
+                winHeight = $(window).height();
+            if ((docHeight - targetOffset) < winHeight) {
+                targetOffset = (docHeight - winHeight);
             }
-            $this.bind('click', function (event) {
-                var targetOffset = ($(h).offset())? $(h).offset().top - opts.paddingTop: 0,
-                    documentHeight = $(document).height(),
-                    windowHeight = $(window).height();
-                if ((documentHeight - targetOffset) < windowHeight) {
-                    targetOffset = (documentHeight - windowHeight);
+            event.preventDefault();
+            $(node).stop().animate({ scrollTop: targetOffset }, opts.duration, opts.easing, function () {
+                if (opts.hash) {
+                    location.hash = h;
                 }
-                event.preventDefault();
-                $(elem).stop().animate({ scrollTop: targetOffset }, opts.duration, opts.easing, function () {
-                    if (opts.hash) {
-                        location.hash = h;
-                    }
-                    if ($.isFunction(opts.callback)) {
-                        opts.callback.call($this.get(0));
-                    }
-                });
+                if ($.isFunction(opts.callback)) {
+                    opts.callback.call($this.get(0));
+                }
             });
-        });
-    };
+        }
 
-    $.fn.smoothScroll.defaults = {
-        duration: 400,
-        easing: 'swing',
-        hash: true,
-        paddingTop: 0,
-        callback: null
-    };
+        // http://css-tricks.com/snippets/jquery/smooth-scrolling/
+        function scrollableNode (nodes) {
+            var i,
+                len,
+                node,
+                $node,
+                scrollable;
+            for (i = 0, len = arguments.length; i < len; i++) {
+                node = arguments[i],
+                $node = $(node);
+                if ($node.scrollTop() > 0) {
+                    return node;
+                } else {
+                    $node.scrollTop(1);
+                    scrollable = $node.scrollTop() > 0;
+                    $node.scrollTop(0);
+                    if (scrollable) {
+                        return node;
+                    }
+                }
+            }
+            return [];
+        }
 
-})(window, jQuery);
+    }
+
+})(window, document, jQuery);
