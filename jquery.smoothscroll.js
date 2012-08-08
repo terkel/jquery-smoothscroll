@@ -51,7 +51,7 @@
             });
         }
 
-        // http://css-tricks.com/snippets/jquery/smooth-scrolling/
+        // http://www.learningjquery.com/2007/10/improved-animated-scrolling-script-for-same-page-links#update4
         function scrollableNode (nodes) {
             var i,
                 len,
